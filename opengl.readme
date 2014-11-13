@@ -1,0 +1,188 @@
+
+version
+1. -- 4.5
+
+
+OpenGL pipeline model
+===========================================
+绘制流水线模型
+
+
+坐标系
+===========================================
+GLUT 使用CRT 坐标即 left-top 为原点 -> x y 向下加大
+OpenGL x -> 大 y 向上加大
+
+
+Color
+============================================
+OpenGL support two types of color mode
++ RGB
+    value valied range is [0.0, 1.0]
++ RGBA 
+  四元分量
+   A mean alpha 用了表示不透明度
++ index
+
+
+API
+============================================
+*类型
++ 图元函数
++ attribute function
++ viewing functin control virtual-camera
++ query funct
++ input-output
+
+命名 主要包含两个lib
+  glXXX 和　gluXXX
+
+
+## glViewport(x,y, width, height)
+    设置GL 只绘制窗口中的一部分
+
+## glClearColor(0.0f, 1.1f, 0.0f, 1.0f) -> void
+            red, green, blue, alpha
+  设置清除色　(背景色) 必须使用　RGBA
+
+
+## glClear* 设置前景色
+
+
+
+
+## glClear(GL_COLOR_BUFFER_BIT);
+ 清除缓冲
+  GL_COLOR_BUFFER_BIT :the buffers currently enable for color writing
+
+## glUseProgram/1 -> void
+
+
+缓冲对象
+=========================================
+buffer-obj 是一个GLuint 的引用
+GL can not use your data directly, so you must be send this data to GL
+1. allocate some memory in GL
+2. fill data to memory
+3. do
+
++ buffer-obj is a linear array of memory. managed and allocated by GL.(in GPU)
++ use control it. but only indirect control over it.
+
+
+## glGenBuffers(GLsizei n, GLuint *refs)
+    返回n个obj-refs (not allocated any memory)
+
+## glBindBuffer(GLenum target, GLuint ref);
+   激活obj,bind to context
+  为了禁用缓冲区对象，可以用0作为缓冲区对象的标识符来调用glBindBuffer()函数。
+  这将把OpenGL切换为默认的不使用缓冲区对象的模式。
+
+   do   . 当绑定到一个以前创建的缓冲区对象时，这个缓冲区对象便成为活动的缓冲区对象。
+
+   when the ref is 0, means cleanup; current bound to target to become unbound from it.
+  
+
+## glBufferData(Glenum target, GLsizeiptr data_size, const GLvoid *data, GLenum usage)
+   -> void
+   init obj, 
+    do 1. allocates memory for the buffer currently bound.
+       2. copy user memory data into the GL buffer memory.
+
+
+rendering 
+we send data to buffer, but GL not regnize what format for this data, so we need to 
+   tells GL that there is vertex data in the buffer-obj and what form the vertex data taskes.
+
+## glEnableVertexAttribArray(GLuint index)
+## glDisableVertexAttribArray(GLuint index)
+
+
+## glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+     always use buffer-obj that bound to GL_ARRAY_BUFFER
+
+
+## glDrawArrays(GLenum mode, 0, 3);
+show render
+  set a vertex and buffer tell the buffer format, you can draw the vertex
+
+
+Double Swap
+====================================================
+OpenGL提供了双缓存，可以用来制作动画。也就是说，在显示前台缓存内容中的一帧画面时
+  后台缓存正在绘制下一帧画面，当绘制完毕，则后台缓存内容便在屏幕上显示出来，而前台正好相反，
+  又在绘制下一帧画面内容。这样循环反复，屏幕上显示的总是已经画好的图形，于是看起来所有的画面都是连续的。
+  在OpenGL中，设计这样的动画程序很简单，只需掌握一个重点函数，即：
+　　void auxSwapBuffers(void);
+　　设置交换缓存。即执行完一次绘制过程，便交换前后台缓存，
+    以便让下一帧图形在屏幕后绘制完成。当然，使用不同的窗口系统设置交换缓存的函数也可能不一样
+    ,比如在X窗口系统下，就最好用glxSwapBufferS()。
+
+
+## glFlush 
+    force drow buffer
+
+
+Step
+---------------------------
+1. send triangle data to GL
+2.
+
+
+Shader
+=============================================
+Vertex Shader
+
+OpenGL着色语言
+---------------------------------------------------
+Shader in GL are written in the OpenGL Shading Language GLSL.
+ runs on the GPU. a DSL.
+
+GLSL 著色語言規格定義了 22 個基本資料類型，有些用法與 C 相同，其它的是繪圖處理器特有的。
+    void – 用於沒有返回值的函式
+    bool – 條件類型，其值可以是真或假
+    int – 帶負號整數
+    float – 浮點數
+    vec2 – 2 個浮點數組成的向量
+    vec3 – 3 個浮點數組成的向量
+    vec4 – 4 個浮點數組成的向量
+    bvec2 – 2 個布林組成的向量
+    bvec3 – 3 個布林組成的向量
+    bvec4 – 4 個布林組成的向量
+    ivec2 – 2 個整數組成的向量
+    ivec3 – 3 個整數組成的向量
+    ivec4 – 4 個整數組成的向量
+    mat2 – 浮點數的 2X2 矩陣
+    mat3 – 浮點數的 3X3 矩陣
+    mat4 – 浮點數的 4X4 矩陣
+    sampler1D – 用來存取一維紋理的句柄
+    sampler2D – 用來存取二維紋理的句柄
+    sampler3D – 用來存取三維紋理的句柄
+    samplerCube – 用來存取立方映射紋理的句柄
+    sampler1Dshadow – 用來存取一維深度紋理的句柄
+    sampler2Dshadow – 用來存取二維深度紋理的句柄
+
+
+
+GLUT
+==============================================================
+## glutInit(&argc, argv); 可以接收一些opengl 的控制参数
+
+## glutCreateWindow("test");  将创建一个title 为给定string 的窗口
+
+## glutDisplayFunc(display); 定义刷新时的回调函数, 在重绘窗口时调用
+
+
+## glutMainLoop(); 进入事件循环，此函数后的任何代码都永远不会被执行到
+
+
+## glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
+   control disply mode
+   use RGB color and use single buffer-cache
+
+
+## glutWinodwSize(width, height)
+
+
+## glutInitWindowPosition(0,0)
+     left-top window in  screen-left-top
