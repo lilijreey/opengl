@@ -7,12 +7,37 @@ OpenGL pipeline model
 ===========================================
 绘制流水线模型
 
+顶点 -> 模型视图　-> 投影　-> 顶点
+
 
 坐标系
 ===========================================
+OpenGL　使用齐次坐标　
 GLUT 使用CRT 坐标即 left-top 为原点 -> x y 向下加大
 OpenGL x -> 大 y 向上加大
 
++ 模型视图矩阵 GL context 
++ 投影矩阵     GL context 
+
+
+Context
+==============================================
+所有的ＧＬ都是基于一个state (context)
+来绘制的
+## glPushMatrix
+## glPopMatrix
+
+
+
+##  glMatrixMode(GL_PROJECTION);
+    指定哪个矩阵是当前矩阵
+      
+  GL_MODELVIEW,对模型视景矩阵堆栈应用随后的矩阵操作.
+  GL_PROJECTION,对投影矩阵应用随后的矩阵操作.
+  GL_TEXTURE,对纹理矩阵堆栈应用随后的矩阵操作.
+
+##glLoadIdentity()一同使用
+   glLoadIdentity():将当前的用户坐标系的原点移到了屏幕中心：类似于一个复位操作
 
 Color
 ============================================
@@ -24,6 +49,13 @@ OpenGL support two types of color mode
    A mean alpha 用了表示不透明度
 + index
 
++ 默认情况下GL 会使用平滑着色(smooth shading)
+   根据两个端点的颜色通过插值计算中间点的颜色
+  　如果是绘制多边形，则会根据多个点的颜色进行插值计算
+
+##  glShadeModle(mode) 用了改变着色模式
+  GL_FALT
+
 
 API
 ============================================
@@ -33,6 +65,39 @@ API
 + viewing functin control virtual-camera
 + query funct
 + input-output
+
+Point
+----------------------------------------------
+## glPointSize(size)
+   设置点的大小
+
+
+## glRectf(-0.5,0.5, 0.5,-0.5);
+
+Line
+----------------------------------------------
+## glLineWidth(size), Pixs
+## glEdgeFlag*
+    控制线段显示
+
+
+填充图元
+===========================================
+GL_POLYGON
+GL_TRIANGLES
+GL_TRIANGLE_STRIP
+GL_TRIANGLE_FAN
+GL_QUADS
+GL_QUAD_STRIP
+
+
+##  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+// 　设置多边形的绘制方式
+   默认为 GL_FILL
+
+## glEnable/feature
+   glDisable/feature
+ 开启和关闭GL 特性
 
 命名 主要包含两个lib
   glXXX 和　gluXXX
@@ -49,6 +114,20 @@ API
 ## glClear* 设置前景色
 
 
+双缓存
+=====================================================
+由于显示和控制显示时异步的
+使用双缓存可以保证显示时是一个完整的图像
+主要使用两个颜色缓存，１个前台，１个后台
+前台存储用于显示的数据，后台存储正在绘制的数据
+在绘制完成后使用　glutSwapBuffers 来切换buffer
+
+使用
+ init set duble-cache mode
+  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+  绘制完后使用　glutSwapBuffers() 切换cache
+
+## glutSwapBuffers()
 
 
 ## glClear(GL_COLOR_BUFFER_BIT);
@@ -163,6 +242,23 @@ GLSL 著色語言規格定義了 22 個基本資料類型，有些用法與 C �
     sampler2Dshadow – 用來存取二維深度紋理的句柄
 
 
+lookup info
+=================================================
+GL 查询函数
+glGet*
+   e.g. glGetFloatv(GL_CURRENT_COLOR, color)
+
+glIsEnable(feature)
+  查询是否开启了某个特性
+
+错误检查
+--------------------------------------
+GLenum glGetError(void)
+  没有错误返回 GL_NO_ERROR
+
+GLubyte * gluErrorString(GLenum)
+   返回一个错误描述字符串 like strerror
+
 
 GLUT
 ==============================================================
@@ -186,3 +282,168 @@ GLUT
 
 ## glutInitWindowPosition(0,0)
      left-top window in  screen-left-top
+
+## glutBitmapCharcater()
+    e.g. glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_10, 'a')
+    e.g. glutBitmapCharacter(GLUT_BITMAP_8_BY_13, 'a')
+
+    绘制字符的位置由raster position 决定，和位图的左下角重合
+
+## glutBitmapWidht(void *font, char c)
+    返回一个字体的宽度
+
+
+## glutReshape(void (*f)(width, height))
+    重绘回调
+
+    GL 有默认的重绘函数
+
+## glutIdleFunc
+    当事件队列为空时，调用
+
+## glutPostRedisplay 
+    标记当前窗口需要重新绘制。通过glutMainLoop下一次循环时，
+   窗口显示将被回调以重新显示窗口的正常面板。多次调用glutPostRedisplay，
+    在下一个显示回调只产生单一的重新显示回调。
+
+
+TEXT 文本
+==============================================================
+不是ＧＬ的核心部分，但是有很重要
+
+字体的形式
++ bitmap 
+  位图，就是bit 矩阵定义. 无法缩放
+
++ stroke 
+  笔画字符有标准GL 图元创建的可以缩放
+
+
+键盘 输入　keyboard
+================================================================
+GLUT 有一个键盘回调,当按下键盘时回调函数,没有释放事件
+
+## glutKeyboardFunc(void (*f)(uc key, int x, int y))
+(x,Y) 为光标位置像素
+
+特殊键　使用
+glutSpecialFunc 回调
+GLUT 给每个特殊键都定义了一个枚举 GLUT_KEY_F1
+
+<Ctrl> <Alt> <Shift> 三个键使用　glutGetModifiers()
+来检查是否按下
+
+鼠标 mouse
++ 点击回调
+   glutMouseFunc
++ 移动回调　不管是否有点击动作
+   glutMotionFunc 有按下的移动
+   glutPassiveMotionFunc 没有按下的移动
+
+window
+glutCreateWindow ->WindoId
+glutDestroyWindow(WindoId)
+glutSetWindwo(WindoId)
+
+菜单　menu
+==================================================================
+GLUT 提供了一组很小的菜单
+
+定义一个菜单
+　1. 确定菜单中有哪些选项, 显示的text
+　2. 关联菜单被点击后的回调
+　3. 将菜单与鼠标关联
+
+glutCreateMenu(cb) -> MenuId
+
+glutSetMenu(MenuId)
+ 设置当前菜单
+
+glutAddMenuEntery(char *text, int value)
+  为当前菜单添加一个选项
+  点击会会回调glutCreateMenu 注册的cb 参数为value
+
+glutAttachMenu(int button)
+  将当前菜单附加在一个鼠标按键上
+   
+子菜单
+　　glutAddSuMenu
+
+注销一个回调
+传入　NULL
+
+
+设置观察矩阵
+##glOrtho(left, right, bottom, top, near, far)
+
+摄像机
+========================================
+定位
+位置　eye-point
+
+## gluLookAt(eye-point, shut-point, up)
+    由相机本身坐标，相机指向点，和上边定义
+
+消隐
+============================
+隐藏物体背面的图像
+
+GL 使用z-buffer algorithm
+需要一个额外的空间保存绘制过程中已经绘制的多边形深度信息，
+这个额外的空间叫做z空间
+
+useg 需要请求一个z-buffer
+  glutInitDisplayMode(... | GLUT_DEPTH)
+  glEnable(GL_DEPTH_TEST)
+  当清空缓存时也要清空z-buffer
+  glClear(... | GL_DEPTH_BUFFER_BIT)
+
+
+GLU 二次曲线
+======================================
+提供了三种二次曲线
+1.球体 sphere
+2.圆柱
+3.圆盘
+
+## GLUquadricObj * gluNewQuadric()
+## void gluDeleteQuadric
+## void gluQuadricDrawStyle(*obj, style)
+    设置二次曲线的绘制方式
+
+GLU 对象
+======================================
+...
+
+
+投影方式
+===========================================
+glFrustum()
+gluPerspective(fov, aspect, near far)
+glOrtho()
+
+变换
+=========================================
+会指定的变换会先执行
+
+## 平移
+  glTranslate(x, y, z) 
+
+
+## 旋转
+  glRotate
+
+
+## 平移
+  glScale(sx,sy,sz)
+
+直接设置矩阵
+## glLoadMatrix
+  加载指定矩阵为当前矩阵
+
+## glMultMatrix
+  使用一个矩阵乘以当前矩阵
+
+
+光照
+=====================================================
