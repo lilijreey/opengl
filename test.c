@@ -20,7 +20,7 @@ static void display()
     
     glClear(GL_COLOR_BUFFER_BIT);
 
-// 在指定的范围内绘制图形, 默认为整个winodw
+//EE 在指定的范围内绘制图形, 默认为整个winodw
 //    glViewport(0, 0, 100, 100); //x,y, w, h
 
 // 绘制矩形　(LT, RD)
@@ -372,19 +372,32 @@ static void init()
 int
 main(int argc, char *argv[])
 {
+    //EE 初始化 glut
     glutInit(&argc, argv);
 
-//    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
+    //EE 指定创建窗口是使用那种显示模式 
+    //- GLUT_RGB RGB 颜色模式
+    //- GLUT_RGBA RGBA 带透明度的RGB模式
+    //- GLUT_SINGLE 单缓冲模块
+    //-   绘制是在显示buf中进行的
+    //- GLUT_DOUBLE 双缓冲，　
+    //　　绘制在后台buf中，绘制好后快速替换显示buf, 显示效果号
+//  glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
     glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
-    glutInitWindowSize(500, 500);
 
+    glutInitWindowSize(500, 500);
     // left-top window in  screen-left-top
     glutInitWindowPosition(0,0);
 
+    //EE 创建窗口 title
     glutCreateWindow("test");
+
+    //EE 设定显示回调, 何时回调??
     glutDisplayFunc(display);
 
     init();
+
+    //EE 运行glut 框架
     glutMainLoop();
     return 0;
 }				/* ----------  end of function main  ---------- */

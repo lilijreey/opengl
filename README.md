@@ -12,6 +12,7 @@ libgl1-mesa-dev
 
 Once you have them installed, link to them when you compile:
 
+link libs
 g++ -lglut -lGL -lGLU -lGLEW example.cpp -o example
 
 In example.cpp, include the OpenGL libraries like so:
@@ -43,14 +44,21 @@ if (glewIsSupported("GL_VERSION_1_4  GL_ARB_point_sprite"))
     fprintf(stdout, "Status: ARB point sprites available.\n");
 ```
 
+GLU
+====================================
+OpenGL utility library
+
 GLFW
 ==============================
-GLFW是一个OpenGL的应用框架,支持Linux和Windows。GLFW 主要用来处理特定操作系统下的特定任务，
-例如 OpenGL 窗口管理、分辨率切换、键盘、鼠标以及游戏手柄、定时器输入、线程创建等等
+GLFW是一个OpenGL的应用框架,支持Linux和Windows。
+用于方便的与OS进行交互
+GLFW 主要用来处理特定操作系统下的特定任务，
+例如 窗口管理、分辨率切换、键盘、鼠标以及游戏手柄、定时器输入、线程创建等等
 
 GLUT
 ===============================
 是一個使用OpenGL核心API 开发的工具库，用了快速使用 GL
+目前主要使用freeglu
 
 
 Unofficial OpenGL SDK
@@ -117,5 +125,10 @@ Pixel  Shader 像素渲染引擎
 卷积
 -----------------------------------------------
 两个函数的合成
+
+
+antialiasing 抗锯齿
+------------------------------------
+边沿像素平滑处理
 
 
