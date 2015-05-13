@@ -29,4 +29,4 @@ static void draw_line()
 }
 ```
 
-[show][double_cache.png]
+![show](double_cache.png)
