@@ -3,6 +3,7 @@
 
 draw line
 -----------------------------------
+<div style="inline-block">
 
 ```c
 static void draw_line()
@@ -28,5 +29,8 @@ static void draw_line()
     }glEnd();
 }
 ```
+
+![show](test_drap_line_strip.png)
+</div>
 
 ![show](double_cache.png)
