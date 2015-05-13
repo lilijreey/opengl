@@ -14,31 +14,141 @@
 #include <math.h>
 
 
-// keyborad
+#define	RX 100
+#define	LX -RX
+#define	TY 100
+#define	BY -TY
+#define	NZ 100
+#define	FZ -NZ
+
+
+/* 
+ *  
+ *  Qus.
+ *  1. 
+    glutReshapeFunc 
+    glutDisplayFunc 区别
+
+    2. 
+       glOrtho 负责视图区域的裁剪,也就是定义能看见区域大小
+         并不负责图像的呈现和在窗口上的显示
+
+       glViewport
+         负责把取景区域怎样显示在屏幕上, 也就是说
+         glOrtho 等于是整个viewprot, glViewport 用来定义和窗口的映射比例
+
+         比如，　如果我们的viewport 是(-50, 50, -50, 50, -1, 1)
+             WindowSize 的大小是100 x 100
+             glViewport(0,0, winWight, winHight)
+             则这个viewprot 在显示到window上就被放大了 4被
+
+    3. 抗锯齿
+          
+ */
+
+static void draw_point()
+{
+    
+    //EE 3D Draw
+    //  使用OpenGL 画图时，并不关心实际的物理坐标(屏幕上的)，
+    //  只关心OpenGl中的, 设置3D 画布
+    //  glPointSize/1
+      
+    //EE 获得支持点大小的范围
+    GLfloat sizes[2]; //存储范围 [min, max]
+    GLfloat step;
+
+    glGetFloatv(GL_POINT_SIZE_RANGE, sizes);
+    glGetFloatv(GL_POINT_SIZE_GRANULARITY, &step);
+    GLfloat curSize = sizes[0];
+    printf("min %f max %f step %f\n", sizes[0], sizes[1], step);
+    
+    //EE point 
+    // glVertex2f
+    // glVertex3f
+
+    //EE 绘制图形，　使用顶点定义
+    /*glBegin(GL_POLYGON); //v2 中的已经废弃了*/
+    /*    glVertex3f(LX/2,TY/2,0);                   */
+    /*    glVertex3f(LX/2,BY/2,10);                  */
+    /*    glVertex3f(RX/2,TY/2,0);                   */
+    /*glEnd();                                       */
+
+
+        float z = -50;
+        float x, y, angle;
+        for (angle = 0; angle  < (2 * M_PI) * 3; angle += 0.05f)
+        {
+            //Qus. 为何是反的
+            x = 50 * sin(angle);
+            y = 50 * cos(angle);
+            glBegin(GL_POINTS);
+            {
+                glVertex3f(x, y, z);
+
+            }glEnd();
+            z += 0.5f;
+
+            glPointSize(curSize/10);
+            curSize += step;
+        }
+
+}
+
+static void draw_line()
+{
+    float x, y ,z, angle;
+
+    //EE glBegin(GL_LINE_STRIP 经过所有点
+    //EE glBegin(GL_LINE_LOOP 最后一个点会连接第一个点
+    glBegin(GL_LINE_STRIP);
+    {
+        for (angle = 0; angle <= M_PI+0.3; angle+= (M_PI/20)) {
+            // 圆的上半部分
+            x = 50 * sin(angle);
+            y = 50 * cos(angle);
+            glVertex3f(x, y, z);
+
+
+            // 圆的下半部分
+            x = 50 * sin(angle + M_PI);
+            y = 50 * cos(angle + M_PI);
+            glVertex3f(x, y, z);
+
+        }
+
+
+    }glEnd();
+
+
+}
+
+
+#if 1
 static void display()
 {
     
-    glClear(GL_COLOR_BUFFER_BIT);
+    //EE 刷新整窗口的buffer, 使用glClearColor 设置的颜色
+    //如果不调用，　OpenGL只会把新的内容绘制在原来的图像上
+    //
+    glClear(GL_COLOR_BUFFER_BIT); 
 
-//EE 在指定的范围内绘制图形, 默认为整个winodw
-//    glViewport(0, 0, 100, 100); //x,y, w, h
+    glPushMatrix();
 
-// 绘制矩形　(LT, RD)
-//    glRectf(-0.5,0.5, 0.5,-0.5);
+    glRotatef(30, 20, 30, 0);
+    
+//    draw_point();
+    draw_line();
 
-    glBegin(GL_POLYGON); //v2 中的已经废弃了
-// GL 使用屏幕中点为0.0 点的坐标系
-//    glVertex2f(-0.5, -0.5);
-//    glVertex2f(-0.5, 0.5);
-//    glVertex2f(0.5, 0.5);
-//    glVertex2f(0.5, -0.5);
- glVertex3f(0,1,0);
- glVertex3f(0,0,1);
- glVertex3f(1,0,0);
-    glEnd();
 
-    glFlush();
+    glPopMatrix();
+
+    //EE 导致所有未执行的GL 命令被执行,
+    // GL 的命令通常都在命令队列中，知道同时一起处理多个命令；
+    glutSwapBuffers();
 } 
+
+#endif
 
 static void keycb(unsigned char c, int x, int y)
 {
@@ -274,23 +384,40 @@ static void display()
 
 #endif
 
-// 重绘函数
 static void myreshape(int w, int h)
 {
-    static i=0;
+    static int i=0;
 
     printf("reshape times:%d w %d h %d\n", i++, w, h);
-//    glMatrixMode(GL_PROJECTION);
-//    glLoadIdentity();
-//    if(w <= h) {
-//        gluOrtho2D(-0.2, 0.2, -0.2 *(GLfloat)h/(GLfloat)w,
-//                   2.0 * (GLfloat)h/(GLfloat)w);
-//    } else {
-//
-//    }
-//
-//    glMatrixMode(GL_MODELVIEW);
-//    glViewport(0,0,w,h);
+    h = h ? h : 1; //0 
+
+    //EE 把显示区域设置为窗口大小
+    // 也就是设置viewport viewport 对应为GL 中能够显示的大小
+    // 0 ,0 是指定viewprot 左下角在window 中的坐标
+    glViewport(0, 0, w, h);
+//    glViewport(0, 0, w/2, h/2); 这时viewprot 占window 的四分之一
+//    glViewport(0, 0, w*2, h*2); 这时window 只显示viewport的四分之一
+
+    //EE 重置投影模式
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    double aspectRatio = (double)w / h;
+
+    //设置观察矩阵 glOrtho(left, right, bottom, top, near, far)
+    //这里的坐标和绘图的坐标系一致,负责摄像机的取景大小
+    if(w <= h) { //这段代码的作用是不管window的形状是什么，都会按原始图像比例放大缩小
+        glOrtho(LX, RX, TY / aspectRatio, BY / aspectRatio,
+                NZ, FZ);
+    } else {
+        glOrtho(LX * aspectRatio, RX * aspectRatio,
+                TY, BY,
+                NZ, FZ);
+    }
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glFlush();
 }
 
 #if 0
@@ -337,11 +464,20 @@ static void myidle()
 
 #endif
 
+//static void _get_gl_version()
+//{
+//    //EE 得到GL 版本 -> const char *
+//    printf("OepnGL Version: %s\n", glGetString(GL_VERSION));
+//}
+
 static void init()
 {
+//    _get_gl_version();
+    
 
 //    glColor3f(1.0,1.0,0); //set front_color
-//    glClearColor(0.0, 0.0, 0.5, 0.5); //set bg color
+//    //EE set clear color 就是调用 glClear(GL_COLOR_BUFFER_BIT) 时的填充色彩
+    glClearColor(0.0, 0.0, 0.5, .5); //set bg color
 
     // GL_PROJECTION 射影
     // GL_MODELVIEW 视图
@@ -354,7 +490,7 @@ static void init()
 //    glShadeModel(GL_FLAT);
 
 //    glPointSize(1);
-    glLineWidth(1); // set line width
+//    glLineWidth(1); // set line width
     
 // 　设置多边形的绘制方式
 //    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -362,7 +498,8 @@ static void init()
     // set window 
 //    gluOrtho2D(-0.5, 1, -1, 1);
 
-//    glutReshapeFunc(myreshape);
+// 当窗口大小改变时调用
+    glutReshapeFunc(myreshape);
 
 //    glutIdleFunc(myidle);
 
@@ -382,8 +519,8 @@ main(int argc, char *argv[])
     //-   绘制是在显示buf中进行的
     //- GLUT_DOUBLE 双缓冲，　
     //　　绘制在后台buf中，绘制好后快速替换显示buf, 显示效果号
-//  glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
-    glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
+  glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE); // 必须配合gl glutSwapBuffers()
+//    glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
 
     glutInitWindowSize(500, 500);
     // left-top window in  screen-left-top

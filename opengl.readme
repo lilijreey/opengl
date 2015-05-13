@@ -143,6 +143,9 @@ GL_QUAD_STRIP
 命名 主要包含两个lib
   glXXX 和　gluXXX
 
+## 保持状态
+  glPushAttrib(mask)
+  glPopAttrib(mask)
 
 ## glViewport(x,y, width, height)
     设置GL 只绘制窗口中的一部分
@@ -154,6 +157,9 @@ GL_QUAD_STRIP
 
 ## glClear* 设置前景色
 
+buffer
+-----------------------------
+GL 有多种缓冲区
 
 双缓存
 =====================================================
@@ -455,6 +461,9 @@ GLU 二次曲线
 GLU 对象
 ======================================
 ...
+
+primivtives 图元
+用来构建复杂对象的基本组成部件
 
 
 投影方式
