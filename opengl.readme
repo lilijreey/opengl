@@ -2,9 +2,18 @@
 version
 1. -- 4.5
 
+
+OpenGL 发展
+------------------------------------------
+从3+ 开始GL 有核心架构　和不鼓励使用的功能
+2008　Year OpenGL ARB fork the GL two profiles
+ one is the modern  core profile, removes a number of legacy features
+ two is a complatiblity profile
+
 GLUT
 ------------------------------
 封装GL 底层函数的工具类，可以更方便的使用GL开发
+使用GLWF 替代
 
 OpenGL 的工作原理
 -----------------------------
@@ -14,6 +23,11 @@ OpenGL 的工作原理
 * OpenGL 有软件实现和硬件实现两种方式
     软实现有 Mesa3D, MS OS 中的OpenGL
     硬件实现　主要采用显卡驱动
+
+primitive 图元
+---------------------------------
+fundamental unit of rendering in GL konwn as
+点，线，三角，...
 
 
 pineline 管线
@@ -132,13 +146,29 @@ GL_QUADS
 GL_QUAD_STRIP
 
 
+//EE 设置填充颜色 依赖顺时针和逆时针,默认逆时针为正面
 ##  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-// 　设置多边形的绘制方式
-   默认为 GL_FILL
+// GL_BACK/GL_FRONT
+// 
+// GL_FILL 填充
+// GL_LINE 秒线
+// GL_POINT 点
+// e.g.
+// glPolygonMode(GL_BACK, GL_LINE);
+// glPolygonMode(GL_FRONT, GL_FILL);
+// 就是真面使用填充，背面使用线段
 
 ## glEnable/feature
    glDisable/feature
  开启和关闭GL 特性
+
+
+## EE 开启隐藏表面特性 每个像素会有一个z 值
+ bool isDepth= glIsEnabled(GL_DEPTH_TEST);
+if (isCull)
+	glEnable(GL_CULL_FACE);
+	else
+	glDisablei(GL_CULL_FACE);
 
 命名 主要包含两个lib
   glXXX 和　gluXXX

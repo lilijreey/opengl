@@ -3,8 +3,6 @@
 
 draw line
 -----------------------------------
-<div style="inline-block">
-
 ```c
 static void draw_line()
 {
@@ -31,6 +29,27 @@ static void draw_line()
 ```
 
 ![show](test_drap_line_strip.png)
-</div>
+
+draw triangle fan
+--------------------------------------
+```
+//使用正方面分别设置为glPoylgon 
+// glPolygonMode(GL_BACK, GL_LINE);
+// glPolygonMode(GL_FRONT, GL_FILL);
+来达到这种效果
+static void draw_triangle_fan()
+{
+    //画锥形的面
+    GLfloat c1[] = {.0, .0, 75.0};
+
+    //画锥形的底
+    GLfloat c2[] = {.0, .0, .0};
+
+    _draw_triangle_fan(c1);
+    _draw_triangle_fan(c2);
+}
+```
+
+![show](trin_fan.png)
 
 ![show](double_cache.png)

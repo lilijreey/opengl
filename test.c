@@ -10,8 +10,11 @@
 
 #include <stdio.h>
 #include <unistd.h>
+//#include <GL/glfw.h>
 #include <GL/glut.h>
+#include <stdbool.h>
 #include <math.h>
+
 
 
 #define	RX 100
@@ -75,29 +78,32 @@ static void draw_point()
     /*glEnd();                                       */
 
 
-        float z = -50;
-        float x, y, angle;
-        for (angle = 0; angle  < (2 * M_PI) * 3; angle += 0.05f)
+    float z = -50;
+    float x, y, angle;
+    for (angle = 0; angle  < (2 * M_PI) * 3; angle += 0.05f)
+    {
+        //Qus. 为何是反的
+        x = 50 * sin(angle);
+        y = 50 * cos(angle);
+        glBegin(GL_POINTS);
         {
-            //Qus. 为何是反的
-            x = 50 * sin(angle);
-            y = 50 * cos(angle);
-            glBegin(GL_POINTS);
-            {
-                glVertex3f(x, y, z);
+            glVertex3f(x, y, z);
 
-            }glEnd();
-            z += 0.5f;
+        }glEnd();
+        z += 0.5f;
 
-            glPointSize(curSize/10);
-            curSize += step;
-        }
+        glPointSize(curSize/10);
+        curSize += step;
+    }
 
 }
 
 static void draw_line()
 {
     float x, y ,z, angle;
+
+    //glLineWidth/1 set
+    //glLineStipple/2 set line pattern
 
     //EE glBegin(GL_LINE_STRIP 经过所有点
     //EE glBegin(GL_LINE_LOOP 最后一个点会连接第一个点
@@ -123,6 +129,141 @@ static void draw_line()
 
 }
 
+// 三角第一种多边形，可以被填充色彩 
+static void draw_triangle()
+{
+
+    //必须指定填充色
+    //多边形的正反面, GL 逆时针环绕个个顶点为正面
+    glBegin(GL_TRIANGLES);
+    {
+        glVertex2f(0, 0);
+        glVertex2f(25, 25);
+        glVertex2f(50, 50);
+
+    }glEnd();
+
+//    glBegin(GL_TRIANGLE_STRIP) //带
+//    每个都是按逆时针绘制
+
+//    glBegin(GL_TRIANGLE_FAN) //三角扇
+//    以第一个点为圆形
+}
+
+//Qus. 如何指定填充色
+//    Aus. glPolygonMode
+static void _draw_triangle_fan(GLfloat center[3])
+{
+    GLfloat x, y, angle;
+    int pivot = 1;
+
+    glBegin(GL_TRIANGLE_FAN);
+    {
+        //fan center point
+        glVertex3fv(center);
+
+        GLfloat inc = M_PI / 8;
+
+        for(angle = 0; angle < (2 * M_PI) + inc; angle += inc)
+        {
+            x = 50 * sin(angle);
+            y = 50 * cos(angle);
+
+            //交替使用rad/blue color
+            if ((++pivot % 2) == 0)
+                glColor3f(0, 0.22, .32);
+            else
+                glColor3f(1, 0, 0);
+
+            glVertex2f(x, y);
+        }
+    }glEnd();
+
+}
+
+static void draw_triangle_fan()
+{
+    GLfloat c1[] = {.0, .0, 75.0};
+    GLfloat c2[] = {.0, .0, .0};
+
+    //画锥形的面
+    _draw_triangle_fan(c1);
+    //画锥形的底
+    _draw_triangle_fan(c2);
+}
+
+// 四角型
+static void draw_quads()
+{
+
+    // 顺序为顺时针方向，顶一个的是左下角
+    // 一个四边形必须在同一平面
+    glBegin(GL_QUADS);{
+        glVertex2f(-30, -12);
+        glVertex2f(-30, 12);
+        glVertex2f(30, 40);
+        glVertex2f(30, -30);
+
+    }glEnd();
+
+    //GL_QUADS_STRIP 四角带
+}
+
+static void draw_polygon()
+{
+    glBegin(GL_POLYGON); {
+        glVertex2f(-20, 50);
+        glVertex2f(20, 50);
+        glVertex2f(50, 20);
+        glVertex2f(50, -20);
+        glVertex2f(20, -50);
+        glVertex2f(-20, -50);
+        glVertex2f(-50, -20);
+        glVertex2f(-50, 20);
+    }glEnd();
+
+}
+
+//EE 填充多边形
+//1. 使用贴图
+//2. 使用点画, 一种32x32 像素的单色位图 
+//   glEnable(GL_POLYGON_STIPPLE)
+//   glPolygonStipple(bitmap)
+
+static GLubyte fire_bitmap [] = {
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 1, 0xf0,
+    0, 0, 7, 0xf0,
+    0xf, 0, 0x1f, 0xe0,
+    0x1f, 0x80, 0x1f, 0xc0,
+    0x0f, 0xc0, 0x3f, 0x80,
+    0x07, 0xe0, 0x7e, 0x00,
+    0x03, 0xf0, 0xff, 0x80,
+    0x03, 0xf5, 0xff, 0xe0,
+    0x07, 0xfd, 0xff, 0xf8,
+    0x1f, 0xfc, 0xff, 0xe8,
+    0xff, 0xe3, 0xbf, 0x70,
+    0xde, 0x80, 0xb7, 0x00,
+    0x71, 0x10, 0x4a, 0x80,
+    0x03, 0x10, 0x4e, 0x40,
+    0x02, 0x88, 0x8c, 0x20,
+    0x05, 0x05, 0x04, 0x40,
+    0x02, 0x82, 0x14, 0x40,
+    0x02, 0x40, 0x10, 0x80,
+    0x02, 0x64, 0x1a, 0x80,
+    0x00, 0x92, 0x29, 0x00,
+    0x00, 0xb0, 0x48, 0x00,
+    0x00, 0xc8, 0x90, 0x00,
+    0x00, 0x85, 0x10, 0x00,
+    0x00, 0x03, 0x00, 0x00,
+    0x00, 0x03, 0x10, 0x00
+};
 
 #if 1
 static void display()
@@ -131,15 +272,56 @@ static void display()
     //EE 刷新整窗口的buffer, 使用glClearColor 设置的颜色
     //如果不调用，　OpenGL只会把新的内容绘制在原来的图像上
     //
-    glClear(GL_COLOR_BUFFER_BIT); 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
+
+    bool isCull= glIsEnabled(GL_CULL_FACE);
+
+    //EE 开启隐藏表面特性 每个像素会有一个z 值
+    bool isDepth= glIsEnabled(GL_DEPTH_TEST);
+
+    //EE 表面消除 只绘制能看到的图像
+    if (isCull) {
+        printf("enable CL_CULL_FACE\n");
+        glEnable(GL_CULL_FACE);
+    } else {
+        printf("not enable CL_CULL_FACE\n");
+        glDisable(GL_CULL_FACE);
+    }
+
+    if (isDepth) {
+        printf("enable depth\n");
+        glEnable(GL_DEPTH_TEST);
+    } else {
+        printf("notEnable depth\n");
+        glDisable(GL_DEPTH_TEST);
+    }
+
+    //EE 设置填充颜色 依赖顺时针和逆时针,默认逆时针为正面
+    // GL_BACK/GL_FRONT
+    // 
+    // GL_FILL 填充
+    // GL_LINE 秒线
+    // GL_POINT 点
+    // e.g.
+    // glPolygonMode(GL_BACK, GL_LINE);
+    // glPolygonMode(GL_FRONT, GL_FILL);
+    // 就是真面使用填充，背面使用线段
+    glPolygonMode(GL_FRONT, GL_FILL),
+    glPolygonMode(GL_BACK, GL_LINE),
 
     glPushMatrix();
 
-    glRotatef(30, 20, 30, 0);
+//    glRotatef(60, 100, 30, 0);
+    glRotatef(60, 10, 30, 0);
     
 //    draw_point();
-    draw_line();
+//    draw_line();
 
+//    draw_triangle();
+//    draw_triangle_fan();
+
+//    draw_quads();
+    draw_polygon(); //通用多边形　可以使用 triangle_fan代替
 
     glPopMatrix();
 
@@ -475,9 +657,15 @@ static void init()
 //    _get_gl_version();
     
 
-//    glColor3f(1.0,1.0,0); //set front_color
 //    //EE set clear color 就是调用 glClear(GL_COLOR_BUFFER_BIT) 时的填充色彩
-    glClearColor(0.0, 0.0, 0.5, .5); //set bg color
+    glClearColor(0.0, 0.0, 0.0, .5); //set bg color
+    glColor3f(1.0,1.0,0); //set front_color
+
+    //使用定点的颜色来填充
+    glShadeModel(GL_FLAT);
+    //glShadeModel(GL_SMOOTH); //平滑渐变的使用每个定点的颜色填充
+
+    glFrontFace(GL_CW);
 
     // GL_PROJECTION 射影
     // GL_MODELVIEW 视图
@@ -492,8 +680,11 @@ static void init()
 //    glPointSize(1);
 //    glLineWidth(1); // set line width
     
-// 　设置多边形的绘制方式
-//    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    //EE 使用位图点画填充　多边形
+    if (! glIsEnabled(GL_POLYGON_STIPPLE))
+        printf("not enable GL_POLYGON_STIPPLE\n");
+    glEnable(GL_POLYGON_STIPPLE);
+    glPolygonStipple(fire_bitmap);
 //    
     // set window 
 //    gluOrtho2D(-0.5, 1, -1, 1);

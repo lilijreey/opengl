@@ -10,6 +10,9 @@ libglu1-mesa-dev
 libgl1-mesa-glx
 libgl1-mesa-dev
 
+
+libglfw 是一个更新更好的工具库, 用了替代 glut
+
 Once you have them installed, link to them when you compile:
 
 link libs
@@ -58,7 +61,7 @@ GLFW 主要用来处理特定操作系统下的特定任务，
 GLUT
 ===============================
 是一個使用OpenGL核心API 开发的工具库，用了快速使用 GL
-目前主要使用freeglu
+目前主要使用freeglu 已经老了，　使用GLFW 替代
 
 
 Unofficial OpenGL SDK
@@ -86,6 +89,10 @@ renderer 渲染器
 raster 光栅
 ------------------------------------
 像素的排列矩阵显示设备显示技术
+
+rasterization 光栅化
+-----------------------------------
+实际绘制或填充每个定点之间的像素形成的线段
 
 
 
