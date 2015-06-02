@@ -61,11 +61,13 @@ int main () {
 	GLuint vao;
 	glGenVertexArrays (1, &vao);
 	glBindVertexArray (vao);
+
 	glBindBuffer (GL_ARRAY_BUFFER, points_vbo);
 	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray (0);
+
 	glBindBuffer (GL_ARRAY_BUFFER, colours_vbo);
 	glVertexAttribPointer (1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-	glEnableVertexAttribArray (0);
 	glEnableVertexAttribArray (1);
 	
 	char vertex_shader[1024 * 256];
@@ -103,6 +105,8 @@ int main () {
 	GLuint shader_programme = glCreateProgram ();
 	glAttachShader (shader_programme, fs);
 	glAttachShader (shader_programme, vs);
+  glBindAttribLocation(shader_programme, 0, "vertex_position");
+  glBindAttribLocation(shader_programme, 1, "vertex_colour");
 	glLinkProgram (shader_programme);
 	
 	glGetProgramiv (shader_programme, GL_LINK_STATUS, &params);
@@ -120,7 +124,7 @@ int main () {
 		1.0f, 0.0f, 0.0f, 0.0f, // first column
 		0.0f, 1.0f, 0.0f, 0.0f, // second column
 		0.0f, 0.0f, 1.0f, 0.0f, // third column
-		0.5f, 0.0f, 0.0f, 1.0f // fourth column
+		0.0f, 0.0f, 0.0f, 1.0f // fourth column
 	};
 	
 	int matrix_location = glGetUniformLocation (shader_programme, "matrix");
@@ -152,14 +156,16 @@ int main () {
 		
 		// update the matrix
 		// - you could simplify this by just using sin(current_seconds)
-		matrix[12] = elapsed_seconds * speed + last_position;
+//		matrix[12] = elapsed_seconds * speed + last_position;
+		matrix[12] = sin(current_seconds); //x move
+//		matrix[13] = sin(current_seconds); //z move
 		last_position = matrix[12];
 		if (fabs (last_position) > 1.0) {
 			speed = -speed;
 		}
 		//
 		// Note: this call is related to the most recently 'used' shader programme
-		glUniformMatrix4fv (matrix_location, 1, GL_FALSE, matrix);
+//		glUniformMatrix4fv (matrix_location, 1, GL_FALSE, matrix);
 		
 		//
 		// Note: this call is not necessary, but I like to do it anyway before any

@@ -259,6 +259,7 @@ we send data to buffer, but GL not regnize what format for this data, so we need
 
 
 ## glDrawArrays(GLenum mode, 0, 3);
+  使用什么图元来显示, GL_POINTS, GL_LINES, LINE_STRIP
 show render
   set a vertex and buffer tell the buffer format, you can draw the vertex
 
@@ -527,3 +528,36 @@ glOrtho()
 
 光照
 =====================================================
+
+
+EE back-face culling
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
+    glCullFace(GL_BACK);
+
+设置正反面的定义
+    glFrontFace(GL_CW) //GL_CCW  CW/顺时针
+
+//添加一个ARRAY_BUFFER 给vao
+glEnableVertexAttribArray (0);
+glBindBuffer (GL_ARRAY_BUFFER, vbo);
+glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+The shader must be decalute in variable store passed data
+in <type> <name>
+
+all data must pass to first-shader(vertex-shader)
+
+Camer
+point the center
+
+//OpenGL 3不支持
+//"layout(locaiont=0) in vec3 vp;" 这种写法
+//需要手动设置
+glBindAttribLocation(shader_programme, 0, "vp"); vp is shader variable name
+glBindAttribLocation(shader_programme, 1, "i_color");
+
+
+glUseProgram (shader_programme);
+must after glUserProgram
+glUniformMatrix4fv (view_mat_location, 1, GL_FALSE, view_mat.m);

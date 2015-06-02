@@ -181,20 +181,33 @@ int main () {
 		 0.5f, -0.5f,	0.0f,
 		-0.5f, -0.5f,	0.0f
 	};
+
+    GLfloat colors[] = {
+        1, 0, 0,
+        0, 1, 0,
+        0, 0, 1
+    };
 	GLuint vbo;
+	GLuint vboc;
 	GLuint vao;
 	const char* vertex_shader =
 	"#version 330\n"
-	"in vec3 vp;"
+//    "layout(locaiont=0) in vec3 vp;"
+//    "layout(locaiont=1) in vec3 i_color;"
+    "in vec3 vp;"
+    "in vec3 i_color;"
+    "out vec3 color;"
 	"void main () {"
+    "   color = i_color;"
 	"	gl_Position = vec4 (vp, 1.0);"
 	"}";
 	
 	const char* fragment_shader =
 	"#version 330\n"
+    "in vec3 color;"
 	"out vec4 frag_colour;"
 	"void main () {"
-	"	frag_colour = vec4 (0.5, 0.0, 0.5, 1.0);"
+	"	frag_colour = vec4 (color, 1.0);"
 	"}";
 	GLuint shader_programme, vs, fs;
 
@@ -247,16 +260,29 @@ int main () {
 	// tell GL to only draw onto a pixel if the shape is closer to the viewer
 	glEnable (GL_DEPTH_TEST); // enable depth-testing
 	glDepthFunc (GL_LESS); // depth-testing interprets a smaller value as "closer"
+
 	
 	glGenBuffers (1, &vbo);
 	glBindBuffer (GL_ARRAY_BUFFER, vbo);
 	glBufferData (GL_ARRAY_BUFFER, 9 * sizeof (GLfloat), points, GL_STATIC_DRAW);
+
+    //colors
+	glGenBuffers (1, &vboc);
+	glBindBuffer (GL_ARRAY_BUFFER, vboc);
+	glBufferData (GL_ARRAY_BUFFER, 9 * sizeof (GLfloat), colors, GL_STATIC_DRAW);
 	
 	glGenVertexArrays (1, &vao);
 	glBindVertexArray (vao);
+
+    //添加一个ARRAY_BUFFER 给vao
 	glEnableVertexAttribArray (0);
 	glBindBuffer (GL_ARRAY_BUFFER, vbo);
 	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+    //colors
+	glEnableVertexAttribArray (1);
+	glBindBuffer (GL_ARRAY_BUFFER, vboc);
+	glVertexAttribPointer (1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 	
 	vs = glCreateShader (GL_VERTEX_SHADER);
 	glShaderSource (vs, 1, &vertex_shader, NULL);
@@ -264,9 +290,17 @@ int main () {
 	fs = glCreateShader (GL_FRAGMENT_SHADER);
 	glShaderSource (fs, 1, &fragment_shader, NULL);
 	glCompileShader (fs);
+
 	shader_programme = glCreateProgram ();
 	glAttachShader (shader_programme, fs);
 	glAttachShader (shader_programme, vs);
+
+    //OpenGL 3不支持
+    //"layout(locaiont=0) in vec3 vp;" 这种写法
+    //需要手动设置
+    glBindAttribLocation(shader_programme, 0, "vp");
+    glBindAttribLocation(shader_programme, 1, "i_color");
+
 	glLinkProgram (shader_programme);
 	
 	while (!glfwWindowShouldClose (window)) {
@@ -278,7 +312,7 @@ int main () {
 		glUseProgram (shader_programme);
 		glBindVertexArray (vao);
 		// draw points 0-3 from the currently bound VAO with current in-use shader
-		glDrawArrays (GL_TRIANGLES, 0, 3);
+        glDrawArrays (GL_TRIANGLES, 0, 3);
 		// update other events like input handling 
 		glfwPollEvents ();
 		if (GLFW_PRESS == glfwGetKey (window, GLFW_KEY_ESCAPE)) {

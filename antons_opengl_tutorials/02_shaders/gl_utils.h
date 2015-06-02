@@ -13,9 +13,6 @@
 #include <GLFW/glfw3.h> /* GLFW helper library */
 #include <stdarg.h>
 /* #include <stdbool.h> // for visual studio i had to comment this out and define pure-C bool :( */
-#define bool int
-#define true 1
-#define false 0
 
 #define GL_LOG_FILE "gl.log"
 

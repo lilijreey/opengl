@@ -12,6 +12,8 @@
 #include "maths_funcs.h"
 #include "gl_utils.h"
 #include <GL/glew.h> // include GLEW and new version of GL on Windows
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <GLFW/glfw3.h> // GLFW helper library
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,10 +25,105 @@
 #include <math.h>
 #define GL_LOG_FILE "gl.log"
 
+
+//一个curd 用三角来话，每个face need two trangle
+static	const	GLfloat	g_vertex_buffer_data[]	=	{
+-1.0f,-1.0f,-1.0f,	//	triangle	1	:	begin
+-1.0f,-1.0f,	1.0f,
+-1.0f,	1.0f,	1.0f,	//	triangle	1	:	end
+1.0f,	1.0f,-1.0f,	//	triangle	2	:	begin
+-1.0f,-1.0f,-1.0f,
+-1.0f,	1.0f,-1.0f,	//	triangle	2	:	end
+1.0f,-1.0f,	1.0f,
+-1.0f,-1.0f,-1.0f,
+1.0f,-1.0f,-1.0f,
+1.0f,	1.0f,-1.0f,
+1.0f,-1.0f,-1.0f,
+-1.0f,-1.0f,-1.0f,
+-1.0f,-1.0f,-1.0f,
+-1.0f,	1.0f,	1.0f,
+-1.0f,	1.0f,-1.0f,
+1.0f,-1.0f,	1.0f,
+-1.0f,-1.0f,	1.0f,
+-1.0f,-1.0f,-1.0f,
+-1.0f,	1.0f,	1.0f,
+-1.0f,-1.0f,	1.0f,
+1.0f,-1.0f,	1.0f,
+1.0f,	1.0f,	1.0f,
+1.0f,-1.0f,-1.0f,
+1.0f,	1.0f,-1.0f,
+1.0f,-1.0f,-1.0f,
+1.0f,	1.0f,	1.0f,
+1.0f,-1.0f,	1.0f,
+1.0f,	1.0f,	1.0f,
+1.0f,	1.0f,-1.0f,
+-1.0f,	1.0f,-1.0f,
+1.0f,	1.0f,	1.0f,
+-1.0f,	1.0f,-1.0f,
+-1.0f,	1.0f,	1.0f,
+1.0f,	1.0f,	1.0f,
+-1.0f,	1.0f,	1.0f,
+1.0f,-1.0f,	1.0f
+};
+
+static	const	GLfloat	g_color_buffer_data[]	=	{
+0.583f,	0.771f,	0.014f,
+0.609f,	0.115f,	0.436f,
+0.327f,	0.483f,	0.844f,
+0.822f,	0.569f,	0.201f,
+0.435f,	0.602f,	0.223f,
+0.310f,	0.747f,	0.185f,
+0.597f,	0.770f,	0.761f,
+0.559f,	0.436f,	0.730f,
+0.359f,	0.583f,	0.152f,
+0.483f,	0.596f,	0.789f,
+0.559f,	0.861f,	0.639f,
+0.195f,	0.548f,	0.859f,
+0.014f,	0.184f,	0.576f,
+0.771f,	0.328f,	0.970f,
+0.406f,	0.615f,	0.116f,
+0.676f,	0.977f,	0.133f,
+0.971f,	0.572f,	0.833f,
+0.140f,	0.616f,	0.489f,
+0.997f,	0.513f,	0.064f,
+0.945f,	0.719f,	0.592f,
+0.543f,	0.021f,	0.978f,
+0.279f,	0.317f,	0.505f,
+0.167f,	0.620f,	0.077f,
+0.347f,	0.857f,	0.137f,
+0.055f,	0.953f,	0.042f,
+0.714f,	0.505f,	0.345f,
+0.783f,	0.290f,	0.734f,
+0.722f,	0.645f,	0.174f,
+0.302f,	0.455f,	0.848f,
+0.225f,	0.587f,	0.040f,0.517f,	0.713f,	0.338f,
+0.053f,	0.959f,	0.120f,
+0.393f,	0.621f,	0.362f,
+0.673f,	0.211f,	0.457f,
+0.820f,	0.883f,	0.371f,
+0.982f,	0.099f,	0.879f
+};
+
 // keep track of window size for things like the viewport and the mouse cursor
 int g_gl_width = 640;
 int g_gl_height = 480;
 GLFWwindow* g_window = NULL;
+
+glm::mat4 get_mvp(const glm::vec3 &cam_p)
+{
+    //定义投影矩阵
+    glm::mat4 projection = glm::perspective(45.0f, 4.0f/3.0f, .1f, 100.0f);
+
+    glm::mat4 view = glm::lookAt(
+        cam_p,
+        glm::vec3(0.f,0,0), //origion position in camera
+        glm::vec3(0.f,1,0) //head is up
+        );
+
+    glm::mat4 model = glm::mat4(1.0f);
+
+    return projection * view* model;
+}
 
 int main () {
 	assert (restart_gl_log ());
@@ -49,12 +146,14 @@ int main () {
 	GLuint points_vbo;
 	glGenBuffers (1, &points_vbo);
 	glBindBuffer (GL_ARRAY_BUFFER, points_vbo);
-	glBufferData (GL_ARRAY_BUFFER, 9 * sizeof (GLfloat), points, GL_STATIC_DRAW);
+//	glBufferData (GL_ARRAY_BUFFER, 9 * sizeof (GLfloat), points, GL_STATIC_DRAW);
+	glBufferData (GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data) * sizeof (GLfloat), g_vertex_buffer_data, GL_STATIC_DRAW);
 	
 	GLuint colours_vbo;
 	glGenBuffers (1, &colours_vbo);
 	glBindBuffer (GL_ARRAY_BUFFER, colours_vbo);
-	glBufferData (GL_ARRAY_BUFFER, 9 * sizeof (GLfloat), colours, GL_STATIC_DRAW);
+//	glBufferData (GL_ARRAY_BUFFER, 9 * sizeof (GLfloat), colours, GL_STATIC_DRAW);
+	glBufferData (GL_ARRAY_BUFFER, sizeof(g_color_buffer_data) * sizeof (GLfloat), g_color_buffer_data, GL_STATIC_DRAW);
 	
 	GLuint vao;
 	glGenVertexArrays (1, &vao);
@@ -116,48 +215,60 @@ int main () {
 	}
 	
 /*--------------------------create camera matrices----------------------------*/
-	/* create PROJECTION MATRIX */
-	#define ONE_DEG_IN_RAD (2.0 * M_PI) / 360.0 // 0.017444444
-	// input variables
-	float near = 0.1f; // clipping plane
-	float far = 100.0f; // clipping plane
-	float fov = 67.0f * ONE_DEG_IN_RAD; // convert 67 degrees to radians
-	float aspect = (float)g_gl_width / (float)g_gl_height; // aspect ratio
-	// matrix components
-	float range = tan (fov * 0.5f) * near;
-	float Sx = (2.0f * near) / (range * aspect + range * aspect);
-	float Sy = near / range;
-	float Sz = -(far + near) / (far - near);
-	float Pz = -(2.0f * far * near) / (far - near);
-	GLfloat proj_mat[] = {
-		Sx, 0.0f, 0.0f, 0.0f,
-		0.0f, Sy, 0.0f, 0.0f,
-		0.0f, 0.0f, Sz, -1.0f,
-		0.0f, 0.0f, Pz, 0.0f
-	};
+	//[> create PROJECTION MATRIX <]
+	//#define ONE_DEG_IN_RAD (2.0 * M_PI) / 360.0 // 0.017444444
+	//// input variables
+	//float near = 0.1f; // clipping plane
+	//float far = 100.0f; // clipping plane
+	//float fov = 67.0f * ONE_DEG_IN_RAD; // convert 67 degrees to radians
+	//float aspect = (float)g_gl_width / (float)g_gl_height; // aspect ratio
+	//// matrix components
+	//float range = tan (fov * 0.5f) * near;
+	//float Sx = (2.0f * near) / (range * aspect + range * aspect);
+	//float Sy = near / range;
+	//float Sz = -(far + near) / (far - near);
+	//float Pz = -(2.0f * far * near) / (far - near);
+	//GLfloat proj_mat[] = {
+	//  Sx, 0.0f, 0.0f, 0.0f,
+	//  0.0f, Sy, 0.0f, 0.0f,
+	//  0.0f, 0.0f, Sz, -1.0f,
+	//  0.0f, 0.0f, Pz, 0.0f
+	//};
 	
-	/* create VIEW MATRIX */
-	float cam_speed = 1.0f; // 1 unit per second
-	float cam_yaw_speed = 10.0f; // 10 degrees per second
-	float cam_pos[] = {0.0f, 0.0f, 2.0f}; // don't start at zero, or we will be too close
-	float cam_yaw = 0.0f; // y-rotation in degrees
-	mat4 T = translate (identity_mat4 (), vec3 (-cam_pos[0], -cam_pos[1], -cam_pos[2]));
-	mat4 R = rotate_y_deg (identity_mat4 (), -cam_yaw);
-	mat4 view_mat = R * T;
+	//[> create VIEW MATRIX <]
+  float cam_speed = 4.0f; // 1 unit per second
+  float cam_yaw_speed = 10.0f; // 10 degrees per second
+  glm::vec3 cam_pos(0.0f, 0.0f, 20.0f); // don't start at zero, or we will be too close
+  float cam_yaw = 0.0f; // y-rotation in degrees
+	//mat4 T = translate (identity_mat4 (), vec3 (-cam_pos[0], -cam_pos[1], -cam_pos[2]));
+	//mat4 R = rotate_y_deg (identity_mat4 (), -cam_yaw);
+	//mat4 view_mat = R * T;
 	
 	/* get location numbers of matrices in shader programme */
-	GLint view_mat_location = glGetUniformLocation (shader_programme, "view");
-	GLint proj_mat_location = glGetUniformLocation (shader_programme, "proj");
-	/* use program (make current in state machine) and set default matrix values*/
-	glUseProgram (shader_programme);
-	glUniformMatrix4fv (view_mat_location, 1, GL_FALSE, view_mat.m);
-	glUniformMatrix4fv (proj_mat_location, 1, GL_FALSE, proj_mat);
+	//GLint view_mat_location = glGetUniformLocation (shader_programme, "view");
+	//GLint proj_mat_location = glGetUniformLocation (shader_programme, "proj");
+  //assert(view_mat_location >  -1);
+  //assert(proj_mat_location>  -1);
+	//[> use program (make current in state machine) and set default matrix values<]
+	//glUseProgram (shader_programme);
+	//glUniformMatrix4fv (view_mat_location, 1, GL_FALSE, view_mat.m);
+	//glUniformMatrix4fv (proj_mat_location, 1, GL_FALSE, proj_mat);
 	
+  GLint mvp_h = glGetUniformLocation(shader_programme, "mvp");
+  assert(mvp_h > -1);
+	glUseProgram (shader_programme);
+  glm::mat4 mvp = get_mvp(cam_pos);
+	glUniformMatrix4fv (mvp_h, 1, GL_FALSE, &mvp[0][0]);
+
+
 /*------------------------------rendering loop--------------------------------*/
 	/* some rendering defaults */
-	glEnable (GL_CULL_FACE); // cull face
-	glCullFace (GL_BACK); // cull back face
-	glFrontFace (GL_CW); // GL_CCW for counter clock-wise
+//  glEnable (GL_CULL_FACE); // cull face
+//  glCullFace (GL_BACK); // cull back face
+//  glFrontFace (GL_CW); // GL_CCW for counter clock-wise
+
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LESS);
 	
 	while (!glfwWindowShouldClose (g_window)) {
 		static double previous_seconds = glfwGetTime ();
@@ -173,7 +284,7 @@ int main () {
 		glUseProgram (shader_programme);
 		glBindVertexArray (vao);
 		// draw points 0-3 from the currently bound VAO with current in-use shader
-		glDrawArrays (GL_TRIANGLES, 0, 3);
+		glDrawArrays (GL_TRIANGLES, 0, 12 * 3);
 		// update other events like input handling 
 		glfwPollEvents ();
 		
@@ -181,44 +292,35 @@ int main () {
 		// control keys
 		bool cam_moved = false;
 		if (glfwGetKey (g_window, GLFW_KEY_A)) {
-			cam_pos[0] -= cam_speed * elapsed_seconds;
+			cam_pos.x -= cam_speed * elapsed_seconds;
 			cam_moved = true;
 		}
 		if (glfwGetKey (g_window, GLFW_KEY_D)) {
-			cam_pos[0] += cam_speed * elapsed_seconds;
+			cam_pos.x += cam_speed * elapsed_seconds;
 			cam_moved = true;
 		}
-		if (glfwGetKey (g_window, GLFW_KEY_PAGE_UP)) {
-			cam_pos[1] += cam_speed * elapsed_seconds;
+		if (glfwGetKey (g_window, GLFW_KEY_J)) {
+			cam_pos.y += cam_speed * elapsed_seconds;
 			cam_moved = true;
 		}
-		if (glfwGetKey (g_window, GLFW_KEY_PAGE_DOWN)) {
-			cam_pos[1] -= cam_speed * elapsed_seconds;
+		if (glfwGetKey (g_window, GLFW_KEY_K)) {
+			cam_pos.y -= cam_speed * elapsed_seconds;
 			cam_moved = true;
 		}
 		if (glfwGetKey (g_window, GLFW_KEY_W)) {
-			cam_pos[2] -= cam_speed * elapsed_seconds;
+			cam_pos.z -= cam_speed * elapsed_seconds;
 			cam_moved = true;
 		}
 		if (glfwGetKey (g_window, GLFW_KEY_S)) {
-			cam_pos[2] += cam_speed * elapsed_seconds;
-			cam_moved = true;
-		}
-		if (glfwGetKey (g_window, GLFW_KEY_LEFT)) {
-			cam_yaw += cam_yaw_speed * elapsed_seconds;
-			cam_moved = true;
-		}
-		if (glfwGetKey (g_window, GLFW_KEY_RIGHT)) {
-			cam_yaw -= cam_yaw_speed * elapsed_seconds;
+			cam_pos.z += cam_speed * elapsed_seconds;
 			cam_moved = true;
 		}
 		/* update view matrix */
-		if (cam_moved) {
-			mat4 T = translate (identity_mat4 (), vec3 (-cam_pos[0], -cam_pos[1], -cam_pos[2])); // cam translation
-			mat4 R = rotate_y_deg (identity_mat4 (), -cam_yaw); // 
-			mat4 view_mat = R * T;
-			glUniformMatrix4fv (view_mat_location, 1, GL_FALSE, view_mat.m);
-		}
+    if (cam_moved) {
+      glm::mat4 mvp = get_mvp(cam_pos);
+      glUniformMatrix4fv (mvp_h, 1, GL_FALSE, &mvp[0][0]);
+      printf("cam_p %f %f %f\n", cam_pos.x, cam_pos.y, cam_pos.z);
+    }
 		
 		if (GLFW_PRESS == glfwGetKey (g_window, GLFW_KEY_ESCAPE)) {
 			glfwSetWindowShouldClose (g_window, 1);
