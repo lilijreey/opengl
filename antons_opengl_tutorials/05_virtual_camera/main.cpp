@@ -24,6 +24,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #define GL_LOG_FILE "gl.log"
+#include "stb_image/stb_image.h"
 
 
 //一个curd 用三角来话，每个face need two trangle
@@ -76,6 +77,7 @@ static	const	GLfloat	g_color_buffer_data[]	=	{
 0.597f,	0.770f,	0.761f,
 0.559f,	0.436f,	0.730f,
 0.359f,	0.583f,	0.152f,
+
 0.483f,	0.596f,	0.789f,
 0.559f,	0.861f,	0.639f,
 0.195f,	0.548f,	0.859f,
@@ -103,6 +105,80 @@ static	const	GLfloat	g_color_buffer_data[]	=	{
 0.820f,	0.883f,	0.371f,
 0.982f,	0.099f,	0.879f
 };
+
+
+static	const	GLfloat	g_uv_buffer_data[]	=	{
+				0.000059f,	1.0f-0.000004f,
+				0.000103f,	1.0f-0.336048f,
+				0.335973f,	1.0f-0.335903f,
+				1.000023f,	1.0f-0.000013f,
+				0.667979f,	1.0f-0.335851f,
+        0.999958f,	1.0f-0.336064f,
+				0.667979f,	1.0f-0.335851f,
+				0.336024f,	1.0f-0.671877f,
+				0.667969f,	1.0f-0.671889f,
+				1.000023f,	1.0f-0.000013f,
+				0.668104f,	1.0f-0.000013f,
+				0.667979f,	1.0f-0.335851f,
+				0.000059f,	1.0f-0.000004f,
+				0.335973f,	1.0f-0.335903f,
+				0.336098f,	1.0f-0.000071f,
+				0.667979f,	1.0f-0.335851f,
+				0.335973f,	1.0f-0.335903f,
+				0.336024f,	1.0f-0.671877f,
+				1.000004f,	1.0f-0.671847f,
+				0.999958f,	1.0f-0.336064f,
+				0.667979f,	1.0f-0.335851f,
+				0.668104f,	1.0f-0.000013f,
+				0.335973f,	1.0f-0.335903f,
+				0.667979f,	1.0f-0.335851f,
+				0.335973f,	1.0f-0.335903f,
+				0.668104f,	1.0f-0.000013f,
+				0.336098f,	1.0f-0.000071f,
+				0.000103f,	1.0f-0.336048f,
+				0.000004f,	1.0f-0.671870f,
+				0.336024f,	1.0f-0.671877f,
+				0.000103f,	1.0f-0.336048f,
+				0.336024f,	1.0f-0.671877f,
+				0.335973f,	1.0f-0.335903f,
+				0.667969f,	1.0f-0.671889f,
+				1.000004f,	1.0f-0.671847f,
+				0.667979f,	1.0f-0.335851f
+};
+
+//void load_texture (const char* file_name, GLuint* tex) {
+GLint load_texture () {
+	int x, y, n;
+	int force_channels = 4;
+  const char* file_name= "skulluvmap.bmp";
+	unsigned char* image_data = stbi_load (file_name, &x, &y, &n, force_channels);
+	if (!image_data) {
+		fprintf (stderr, "ERROR: could not load %s\n", file_name);
+		return -1;
+	}
+	// NPOT check
+	if ((x & (x - 1)) != 0 || (y & (y - 1)) != 0) {
+		fprintf (
+			stderr, "WARNING: texture %s is not power-of-2 dimensions\n", file_name
+		);
+	}
+  printf("peix width %d hight %d\n", x, y);
+
+  GLuint textureId;
+  glGenTextures(1, &textureId);
+
+  //bind new texture, all after texture fn will modify this texture
+  glBindTexture(GL_TEXTURE_2D, textureId);
+
+  //send to OpenGL
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_BGR, GL_UNSIGNED_BYTE, file_name);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+  stbi_image_free(image_data);
+  return textureId;
+}
 
 // keep track of window size for things like the viewport and the mouse cursor
 int g_gl_width = 640;
@@ -202,6 +278,7 @@ int main () {
 	glAttachShader (shader_programme, fs);
 	glAttachShader (shader_programme, vs);
 	glLinkProgram (shader_programme);
+
 	
 	glGetProgramiv (shader_programme, GL_LINK_STATUS, &params);
 	if (GL_TRUE != params) {
@@ -254,11 +331,12 @@ int main () {
 	//glUniformMatrix4fv (view_mat_location, 1, GL_FALSE, view_mat.m);
 	//glUniformMatrix4fv (proj_mat_location, 1, GL_FALSE, proj_mat);
 	
-  GLint mvp_h = glGetUniformLocation(shader_programme, "mvp");
+  GLint mvp_h = glGetUniformLocation(shader_programme, "tex");
   assert(mvp_h > -1);
 	glUseProgram (shader_programme);
   glm::mat4 mvp = get_mvp(cam_pos);
-	glUniformMatrix4fv (mvp_h, 1, GL_FALSE, &mvp[0][0]);
+  GLint tex= load_texture();
+	glUniform1d(mvp_h, 1, GL_FALSE, &tex);
 
 
 /*------------------------------rendering loop--------------------------------*/

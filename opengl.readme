@@ -15,6 +15,11 @@ GLUT
 封装GL 底层函数的工具类，可以更方便的使用GL开发
 使用GLWF 替代
 
+GLEW
+--------------------------------
+处理OPenGL 的扩展功能
+
+
 OpenGL 的工作原理
 -----------------------------
 * 一组图形过程API, 不是描述型API比如CSS
@@ -561,3 +566,37 @@ glBindAttribLocation(shader_programme, 1, "i_color");
 glUseProgram (shader_programme);
 must after glUserProgram
 glUniformMatrix4fv (view_mat_location, 1, GL_FALSE, view_mat.m);
+
+
+
+Texture 贴图/纹理
+
+-------------------------------------------------
+OpenGL 如何知道用哪一张图来填充三角??
+Ans. 使用UV 坐标
+是一个[0,1] 之间的值，纹理的片源数量是纹理的高度乘以长度
+纹理坐标＝　UV.x * 宽　UV.y * 高
+U 对应　x 轴, V 对应y 轴
+
+ 	
+
+每个vexter 出来定点位置信息外还有两个浮点坐标 U,V
+创建，绑定，填充
+
+首先load 纹理(图片),把textur 传递给GL,为顶点提供纹理坐标
+纹理对象不直接和shader 打交道，而是通过一个纹理单元
+
+生成纹理对象
+glGenTextrues()
+glBindTexture 绑定纹理对象，之和所有对纹理的操作都会作用于
+　　　这个纹理
+glTexImage2D
+       装入texture
+映射坐标
+  给每一个vertex 定义一个纹理中的坐标，纹理坐标就是[0,1]
+  就是裁剪贴图
+
+压缩纹理
+ tools: The Compressonator
+  格式 DXT1, DXT3, DXT5
+  GPU 直接支持
