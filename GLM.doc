@@ -1,0 +1,32 @@
+a mach matrix lib
+
+
+#include<glm/glm.hpp>
+
+glm::mat4 四元方阵
+glm::vec4 
+
+
+平移操作
+#include<glm/transform.hpp>
+glm::mat4 trm = glm::translate(10,0,0); x轴平移10个单位的变换矩阵
+
+
+单位矩阵 identiry  matrix
+glm::mat4 glm::mat4(1.0)
+
+
+缩放
+glm::mat4 scalingm = glm:scale(2,2,2)
+
+rotation matrices 旋转
+
+生成投影矩阵
+
+glm:mat4 projectionMatrix = glm::perspective(角度，屏幕的高宽比, z-near, z-faer)
+                                         
+
+
+
+
+

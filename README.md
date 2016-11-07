@@ -13,6 +13,10 @@ libgl1-mesa-dev
 
 libglfw 是一个更新更好的工具库, 用了替代 glut
 
+## tools
+glxinfo | grep OpenGL
+  查看当前 opengl 信息
+
 Once you have them installed, link to them when you compile:
 
 link libs

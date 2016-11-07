@@ -297,6 +297,7 @@ Vertex Shader
 
 OpenGL着色语言
 ---------------------------------------------------
+从2.0开始,所有的绘图都通过着色器来实现.比1.0中的darwLine等API更强大和复杂
 Shader in GL are written in the OpenGL Shading Language GLSL.
  runs on the GPU. a DSL.
 
@@ -600,3 +601,4 @@ glTexImage2D
  tools: The Compressonator
   格式 DXT1, DXT3, DXT5
   GPU 直接支持
+总应该使用压缩纹理

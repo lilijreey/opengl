@@ -1,0 +1,92 @@
+Grama
+着色器
+-----------------------------
+
+#version tag
+GL    #version 
+2.0    110
+2.1    120
+3.0    130
+3.1    140
+3.2    150
+3.3    330
+same GLVersion
+
+如果不指定#version GL会给定一个早期的版本
+
+
+EE varable
+------------------------------------
+scople 和C 相同black scople
+
+EE Storage Qualifiers
+------------------------------------
+const like C
+in specifies that the variable is an input to the shader stage
+out specifies that the variable is an output to the shader stage
+uniform : 定义一个全局变量 must be declared as global variables
+         across the all shader stages, any type variable  can be
+        specified as uniform. a shader cannot write to a uniform 
+        variable and change its value.
+  
+buffer
+shared
+
+
+array
+ float xx[3] = flaot[3](1,2,3,4);
+多维数组，在OpenGL4+ 才支持和C 的语法相同
+
+EE length
+array, mat, vector 都有.length() 方法，而且是编译器计算的
+
+for (int i =0; i < xx.length(); ++i)
+  xx[i] *= 3;
+
+
+Control
+----------------------------------
+if, switch, for, while, do while, same as C
+
+function
+---------------------------------------
+
+对于array 类型的必须spcify size
+
+所有的参数都可以有一个 Qualifiers
+
+in: default, value copied into a function
+const in:
+out: copied out of a function 
+inout:
+
+如果修改一个非 out/inout 参数,则会报错
+
+计算不变性
+GLSL 不保证同一个计算在两个shaders 计算时结果会相同.
+ 可能会有一些细微的差异.
+如果要保证一样需要使用
+ `invariant' or `precise'
+
+
+GLSL 文件后缀名
+vertex sharder .vs
+fragment sharder .fs
+geometry shader .gs
+
+
+load src
+read file
+copy to buffer
+	vs = glCreateShader (GL_VERTEX_SHADER);
+	glShaderSource (vs, 1, &str_array, NULL);
+	glCompileShader (vs);
+
+
+
+uniform 
+1. get from glsl
+   colour_loc = glGetUniformLocation (shader_programme, "inputColour");
+  if can not find varable return -1
+2. set
+   glUniform4f (colour_loc, 1.0f, 0.0f, 0.0f, 1.0f);
